@@ -1,0 +1,51 @@
+// Shooting Point for Android: the live site in a full-screen WebView. No game code or assets live here.
+// Signing keys stay out of the repository: .local/mobile/keystore.properties (see mobile/README.md).
+plugins {
+    id "com.android.application"
+}
+
+// A build in another checkout (PB-TEST) signs with the live checkout's key without copying it: set PBMB_KEYSTORE_PROPERTIES to that
+// keystore.properties (its .jks is looked for beside it).
+def keysOverride = System.getenv("PBMB_KEYSTORE_PROPERTIES")
+def keysFile = keysOverride ? new File(keysOverride) : rootProject.file("../../.local/mobile/keystore.properties")
+def keys = new Properties()
+if (keysFile.exists()) keysFile.withInputStream { keys.load(it) }
+
+android {
+    namespace "xyz.shootingpoint.game"
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "xyz.shootingpoint.game"
+        minSdk 24
+        targetSdk 36
+        versionCode 9
+        versionName "2.2.2"
+    }
+
+    signingConfigs {
+        release {
+            if (keysFile.exists()) {
+                storeFile keysOverride ? new File(keysFile.parentFile, new File(keys["storeFile"]).name) : rootProject.file(keys["storeFile"])
+                storePassword keys["storePassword"]
+                keyAlias keys["keyAlias"]
+                keyPassword keys["keyPassword"]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+}
