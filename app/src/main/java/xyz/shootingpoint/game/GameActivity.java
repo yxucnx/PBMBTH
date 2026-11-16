@@ -39,7 +39,7 @@ import java.nio.charset.StandardCharsets;
 /** The game page in a full-screen WebView: no address bar, and no wait for Google to verify the domain. */
 public class GameActivity extends Activity {
     private static final String HOME = "https://shootingpoint.xyz/";
-    private static final String APP_MARK = " PBMBApp/2.2.2"; // the login page hides its app download link on this mark
+    private static final String APP_MARK = " PBMBApp/2.2.3"; // the login page hides its app download link on this mark
     private static final int ASK_MICROPHONE = 7;
     private static final String DISCORD_APP = "com.discord";
     /** the App Link for https://shootingpoint.xyz/ (manifest): on only while a Discord sign-in is out in the Discord app */
@@ -169,6 +169,7 @@ public class GameActivity extends Activity {
         web.setWebViewClient(new GameClient());
         web.setWebChromeClient(new GameChrome());
         root.addView(web);
+        web.setPointerCaptureListener(pointer::captureChanged);
         pointer.attach(web);
         web.requestFocus();
     }

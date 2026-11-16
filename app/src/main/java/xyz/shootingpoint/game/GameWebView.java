@@ -13,7 +13,12 @@ import android.webkit.WebView;
  * via onResolvePointerIcon. Overriding it here ensures the cursor sprite completely vanishes during gameplay.
  */
 class GameWebView extends WebView {
+    public interface PointerCaptureListener {
+        void onPointerCaptureChanged(boolean hasCapture);
+    }
+
     private boolean cursorHidden;
+    private PointerCaptureListener captureListener;
 
     public GameWebView(Context context) {
         super(context);
@@ -25,6 +30,10 @@ class GameWebView extends WebView {
 
     public GameWebView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    public void setPointerCaptureListener(PointerCaptureListener listener) {
+        this.captureListener = listener;
     }
 
     public void setCursorHidden(boolean hidden) {
@@ -44,6 +53,9 @@ class GameWebView extends WebView {
     public void onPointerCaptureChange(boolean hasCapture) {
         super.onPointerCaptureChange(hasCapture);
         setCursorHidden(hasCapture);
+        if (captureListener != null) {
+            captureListener.onPointerCaptureChanged(hasCapture);
+        }
     }
 
     @Override

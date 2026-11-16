@@ -91,23 +91,23 @@ jobs:
             exit 1
           fi
           echo "Found APK at: $APK_PATH"
-          cp "$APK_PATH" ShootingPoint-2.2.2.apk
-          sha256sum ShootingPoint-2.2.2.apk > ShootingPoint-2.2.2.apk.sha256
-          cat ShootingPoint-2.2.2.apk.sha256
+          cp "$APK_PATH" ShootingPoint-2.2.3.apk
+          sha256sum ShootingPoint-2.2.3.apk > ShootingPoint-2.2.3.apk.sha256
+          cat ShootingPoint-2.2.3.apk.sha256
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ShootingPoint-2.2.2-APK
+          name: ShootingPoint-2.2.3-APK
           path: |
-            ShootingPoint-2.2.2.apk
-            ShootingPoint-2.2.2.apk.sha256
+            ShootingPoint-2.2.3.apk
+            ShootingPoint-2.2.3.apk.sha256
 
       - name: Attach to GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" ShootingPoint-2.2.2.apk ShootingPoint-2.2.2.apk.sha256 \
+          gh release create "$GITHUB_REF_NAME" ShootingPoint-2.2.3.apk ShootingPoint-2.2.3.apk.sha256 \
             --title "Shooting Point Android $GITHUB_REF_NAME" \
-            --notes "Release APK for Shooting Point Android (v2.2.2). Download and install directly on Android device."
+            --notes "Release APK for Shooting Point Android (v2.2.3). Download and install directly on Android device."
