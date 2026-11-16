@@ -1,8 +1,5 @@
 name: Build Android APK
 
-# Builds the Android APK (Shooting Point) using GitHub's runners without installing Android Studio or SDK locally.
-#   - push to main / manual run (workflow_dispatch): the APK is uploaded as an artifact of the run
-#   - push a tag (git tag v2.2.2 && git push origin v2.2.2): the APK is also attached to a GitHub Release
 on:
   push:
     branches: [main, master]
@@ -14,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  apk:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -39,6 +36,8 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
 
       - name: Prepare Signing Keystore
         id: keystore
@@ -54,14 +53,12 @@ jobs:
           if [ -n "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" ]; then
             echo "Using official signing key from GitHub Secret..."
             echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 -d > "$PROJECT_DIR/keystore/release.jks"
-            cat <<EOF > "$PROJECT_DIR/keystore/keystore.properties"
-storeFile=release.jks
-storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}
-keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}
-EOF
+            echo "storeFile=release.jks" > "$PROJECT_DIR/keystore/keystore.properties"
+            echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> "$PROJECT_DIR/keystore/keystore.properties"
+            echo "keyAlias=${{ secrets.RELEASE_KEY_ALIAS }}" >> "$PROJECT_DIR/keystore/keystore.properties"
+            echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> "$PROJECT_DIR/keystore/keystore.properties"
           else
-            echo "No signing secret found. Generating standalone release key for testing..."
+            echo "Generating standalone release key for testing..."
             keytool -genkeypair -v \
               -keystore "$PROJECT_DIR/keystore/release.jks" \
               -alias shootingpoint \
@@ -71,12 +68,10 @@ EOF
               -storepass shootingpoint \
               -keypass shootingpoint \
               -dname "CN=ShootingPoint, OU=Game, O=ShootingPoint, L=Bangkok, ST=Bangkok, C=TH"
-            cat <<EOF > "$PROJECT_DIR/keystore/keystore.properties"
-storeFile=release.jks
-storePassword=shootingpoint
-keyAlias=shootingpoint
-keyPassword=shootingpoint
-EOF
+            echo "storeFile=release.jks" > "$PROJECT_DIR/keystore/keystore.properties"
+            echo "storePassword=shootingpoint" >> "$PROJECT_DIR/keystore/keystore.properties"
+            echo "keyAlias=shootingpoint" >> "$PROJECT_DIR/keystore/keystore.properties"
+            echo "keyPassword=shootingpoint" >> "$PROJECT_DIR/keystore/keystore.properties"
           fi
 
       - name: Build Release APK
@@ -95,9 +90,9 @@ EOF
             exit 1
           fi
           echo "Found APK at: $APK_PATH"
-          cp "$APK_PATH" "ShootingPoint-2.2.2.apk"
-          sha256sum "ShootingPoint-2.2.2.apk" > "ShootingPoint-2.2.2.apk.sha256"
-          cat "ShootingPoint-2.2.2.apk.sha256"
+          cp "$APK_PATH" ShootingPoint-2.2.2.apk
+          sha256sum ShootingPoint-2.2.2.apk > ShootingPoint-2.2.2.apk.sha256
+          cat ShootingPoint-2.2.2.apk.sha256
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
